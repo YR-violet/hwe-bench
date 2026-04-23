@@ -1,0 +1,6 @@
+#!/bin/bash
+set -euo pipefail
+cd /home/{{ repo }}
+git apply --whitespace=nowarn << 'PATCH_EOF'
+{{ fix_patch }}
+PATCH_EOF

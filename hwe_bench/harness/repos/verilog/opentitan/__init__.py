@@ -1,0 +1,1 @@
+from hwe_bench.harness.repos.verilog.opentitan.opentitan import *

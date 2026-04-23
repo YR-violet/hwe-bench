@@ -1,0 +1,68 @@
+#!/bin/bash
+set -euo pipefail
+
+REPO=/home/{{ repo }}
+VERIFIER_DIR=/logs/verifier
+INSTANCE_ID="{{ instance_id }}"
+mkdir -p "$VERIFIER_DIR"
+
+# Ensure reward.txt is always written, regardless of exit path.
+# Harbor requires this file; actual f2p scoring is done offline (Stage 3).
+trap 'echo 0 > "$VERIFIER_DIR/reward.txt"' EXIT
+
+cd "$REPO"
+BASE_SHA="{{ base_sha }}"
+
+# Exclude build artifacts and agent workspace from diff.
+cat >> .git/info/exclude << 'EXCLUDE'
+# Build artifacts (Verilator / FuseSoC)
+build/
+build*/
+obj_dir/
+sim_build/
+jgproject/
+_build/
+
+# Build artifacts (VCS / OpenTitan)
+scratch/
+csrc/
+simv
+simv.*
+simv.daidir/
+DVEfiles/
+ucli.key
+transcript
+
+# Simulation outputs
+*.vcd
+*.fst
+*.vlt
+*.verilator_*
+
+# Agent workspace
+.claude/
+.codex/
+.aider*
+
+# Common dev artifacts
+*.log
+*.swp
+*~
+*.bak
+__pycache__/
+.pytest_cache/
+.venv/
+.cache/
+.Xil/
+EXCLUDE
+
+git -c core.fileMode=false add -A
+git -c core.fileMode=false diff "$BASE_SHA" --cached --no-ext-diff --no-color \
+    > "$VERIFIER_DIR/model_patch.diff"
+
+if [ -s "$VERIFIER_DIR/model_patch.diff" ]; then
+    LINES=$(wc -l < "$VERIFIER_DIR/model_patch.diff")
+    echo "{\"instance_id\":\"$INSTANCE_ID\",\"patch_lines\":$LINES}" > "$VERIFIER_DIR/detail.json"
+else
+    echo "{\"instance_id\":\"$INSTANCE_ID\",\"error\":\"empty_patch\"}" > "$VERIFIER_DIR/detail.json"
+fi

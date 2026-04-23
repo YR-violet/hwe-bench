@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hwe-bench"
+version = "0.1.0"
+description = "HWE-bench: Hardware Engineering Bench for RTL/Verilog bug fixing"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "dataclasses-json",
+  "docker",
+  "gitpython",
+  "json-repair",
+  "openai>=2.29.0",
+  "PyGithub",
+  "PyYAML",
+  "requests",
+  "swe-rex",
+  "toml",
+  "tqdm",
+  "unidiff",
+  "websockets",
+]
+
+[project.optional-dependencies]
+dev = ["ruff", "typos"]
+
+[tool.setuptools.packages.find]
+include = ["hwe_bench*"]
+exclude = ["hwe_bench.harness.artifacts*"]
