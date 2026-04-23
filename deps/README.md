@@ -17,7 +17,7 @@ Typical usage is through `harbor run` after generating task directories with the
 ```bash
 harbor run --path tasks/hwe-bench-ibex/ \
   -a codex -m openai/gpt-5.4 \
-  --ak reasoning_effort=high \
+  --ak reasoning_effort=xhigh \
   -k 1 -r 2 --n-concurrent 4 --no-delete \
   --agent-setup-timeout-multiplier 2.0 \
   --job-name hwe-ibex-codex

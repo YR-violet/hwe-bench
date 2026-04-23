@@ -7,7 +7,7 @@ name = "hwe-bench"
 version = "0.1.0"
 description = "HWE-bench: Hardware Engineering Bench for RTL/Verilog bug fixing"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
   "dataclasses-json",
   "docker",

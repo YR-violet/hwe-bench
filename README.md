@@ -41,7 +41,7 @@ uv run python -m hwe_bench.harness.harbor.adapter \
 # 4. Run the agent
 export CODEX_AUTH_JSON_PATH=~/.codex/auth.json
 harbor run --path tasks/hwe-bench-ibex/ \
-  -a codex -m openai/gpt-5.4 --ak reasoning_effort=high \
+  -a codex -m openai/gpt-5.4 --ak reasoning_effort=xhigh \
   -k 1 -r 2 --n-concurrent 4 --no-delete \
   --agent-setup-timeout-multiplier 2.0 \
   --job-name my-first-run
@@ -69,7 +69,7 @@ For detailed agent recipes, scoring conventions, and troubleshooting notes, see 
 
 - Linux (tested on Ubuntu 22.04)
 - Docker 20.10+ (rootless supported and recommended)
-- Python 3.11+
+- Python 3.12+
 - [uv](https://github.com/astral-sh/uv)
 - [huggingface_hub](https://pypi.org/project/huggingface-hub/) CLI (`pip install -U huggingface_hub`) for dataset download
 - Disk space: roughly 200 GB for the published non-OpenTitan image set (ibex alone is ~10 GB); OpenTitan local builds require additional storage
@@ -134,7 +134,7 @@ Set environment variables for the agents you plan to evaluate:
 | Codex CLI | `CODEX_AUTH_JSON_PATH` | Host path to `~/.codex/auth.json`; Harbor uploads it into the container |
 | Kimi CLI | `KIMI_API_KEY` | Format `sk-kimi-...` (not `MOONSHOT_API_KEY`) |
 | OpenHands SDK | `LLM_API_KEY` | Provider-specific, passed through to LiteLLM |
-| qwen-coder | `DASHSCOPE_API_KEY` | Passed as `OPENAI_API_KEY` inside the container |
+| OpenHands SDK (Qwen 3.6 Plus) | `LLM_API_KEY` | Set from `DASHSCOPE_API_KEY`; see [docs/agents.md](docs/agents.md) for endpoint details |
 
 Agent-specific command templates and provider notes are documented in [docs/agents.md](docs/agents.md).
 
@@ -161,7 +161,7 @@ Re-run the adapter whenever per-PR Docker images are rebuilt; task `test.sh` fil
 # Codex CLI
 export CODEX_AUTH_JSON_PATH=~/.codex/auth.json
 harbor run --path tasks/hwe-bench-<repo>/ \
-  -a codex -m openai/gpt-5.4 --ak reasoning_effort=high \
+  -a codex -m openai/gpt-5.4 --ak reasoning_effort=xhigh \
   -k 1 -r 2 --n-concurrent 4 --no-delete \
   --agent-setup-timeout-multiplier 2.0 \
   --job-name hwe-<repo>-codex
@@ -205,7 +205,7 @@ The aggregate report is at `results/<job-name>/eval/final_report.json`. Per-case
 
 ## Results
 
-Scores on the 417-case benchmark, with default settings (`-k 1 -r 2 -n 4`):
+Scores on the 417-case benchmark, with default settings (`-k 1 -r 2`):
 
 ![HWE-bench resolved rates](docs/assets/benchmark_results.png)
 

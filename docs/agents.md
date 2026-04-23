@@ -10,7 +10,7 @@ A dataset JSONL alone is not enough to run an evaluation. The dataset file defin
 
 **Docker images** carry the pre-installed toolchain for each pull request — Verilator, Mill, SBT, RISC-V GCC, and so on — along with a finalized commit whose SHA the testbench embeds. Pull them from the registry with `scripts/pull_images.sh <repo>`, or rebuild them from source via [docs/building-images.md](building-images.md). OpenTitan is an exception: HWE-bench does not distribute OpenTitan images because its evaluation flow requires Synopsys VCS; build those images locally from a `vcs:minimal` base image that you provide. Do not skip this step: Harbor will happily spin up containers and hand the agent a blank workspace if the image is missing, producing empty patches that look like zero-resolved runs.
 
-**Task directories** are what Harbor actually consumes. The adapter reads the dataset JSONL, reads `/home/base_commit.txt` out of each image to capture the finalized SHA, and emits `tasks/hwe-bench-<repo>/<task-id>/` with `instruction.md` (the prompt the agent sees), `task.toml` (scheduling config), `environment/` (container entrypoints), and `tests/` (held out until scoring):
+**Task directories** are what Harbor actually consumes. The adapter reads the dataset JSONL, reads `/home/base_commit.txt` or the legacy `/home/<repo>_base_commit.txt` out of each image to capture the finalized SHA, and emits `tasks/hwe-bench-<repo>/<task-id>/` with `instruction.md` (the prompt the agent sees), `task.toml` (scheduling config), `environment/` (container entrypoints), and `tests/` (held out until scoring):
 
 ```bash
 uv run python -m hwe_bench.harness.harbor.adapter \
@@ -32,7 +32,7 @@ One practical consequence worth calling out: in HWE-bench's setup Harbor does no
 
 ## Agent recipes
 
-Each recipe below gives the host-side credential setup, the `harbor run` command template, the model identifier, and the constraints specific to that agent. Replace `<repo>` with one of `ibex`, `cva6`, `caliptra`, `rocketchip`, `xiangshan`, `opentitan`, or `opentitan-expansion`.
+Each recipe below gives the host-side credential setup, the `harbor run` command template, the model identifier, and the constraints specific to that agent. Replace `<repo>` with one of `ibex`, `cva6`, `caliptra`, `rocketchip`, `xiangshan`, or `opentitan`.
 
 All recipes share the same core flags: `-k 1 -r 2` for "one attempt per task, retry up to two transient failures"; `--n-concurrent` for parallelism; `--no-delete` to preserve per-PR images across retries; `--agent-setup-timeout-multiplier` to give slower agent CLIs extra time to install. Their meanings are explained in the next section.
 
