@@ -207,15 +207,7 @@ The aggregate report is at `results/<job-name>/eval/final_report.json`. Per-case
 
 Scores on the 417-case benchmark, with default settings (`-k 1 -r 2 -n 4`):
 
-| Agent | Resolved | Percentage |
-|---|---:|---:|
-| Codex (gpt-5.4, high) | 295 / 417 | 70.7% |
-| Claude Opus 4.6 | 284 / 417 | 68.1% |
-| Claude Sonnet 4.6 | 278 / 417 | 66.7% |
-| GLM-5.1 | 268 / 417 | 64.3% |
-| Qwen3.6-Plus (OpenHands) | 219 / 417 | 52.5% |
-| DeepSeek V3.2 | 217 / 417 | 52.0% |
-| Kimi K2.5 | 199 / 417 | 47.7% |
+![HWE-bench resolved rates](docs/assets/benchmark_results.png)
 
 Per-repository breakdowns and analysis: see the [paper](https://arxiv.org/abs/2604.14709).
 
