@@ -3,7 +3,7 @@ set -euo pipefail
 
 REGISTRY="${HWE_BENCH_IMAGE_REGISTRY:-ghcr.io/pku-liang}"
 LOCAL_PREFIX="${HWE_BENCH_LOCAL_IMAGE_PREFIX:-hwebench}"
-DATASET_ROOT="${HWE_BENCH_DATASET_ROOT:-datasets/pipeline}"
+DATASET_ROOT="${HWE_BENCH_DATASET_ROOT:-datasets}"
 
 usage() {
   cat <<'EOF'
@@ -26,7 +26,7 @@ Build OpenTitan locally after preparing a vcs:minimal base image.
 Environment:
   HWE_BENCH_IMAGE_REGISTRY      Remote registry prefix (default: ghcr.io/pku-liang)
   HWE_BENCH_LOCAL_IMAGE_PREFIX  Local runtime prefix (default: hwebench)
-  HWE_BENCH_DATASET_ROOT        Dataset root (default: datasets/pipeline)
+  HWE_BENCH_DATASET_ROOT        Dataset root (default: datasets)
 EOF
 }
 
@@ -70,27 +70,27 @@ case "$repo_key" in
   ibex)
     org="lowRISC"
     repo="ibex"
-    default_dataset="$DATASET_ROOT/lowRISC/lowRISC__ibex_s11_eval_ready.jsonl"
+    default_dataset="$DATASET_ROOT/lowRISC__ibex.jsonl"
     ;;
   cva6)
     org="openhwgroup"
     repo="cva6"
-    default_dataset="$DATASET_ROOT/openhwgroup/openhwgroup__cva6_s11_eval_ready.jsonl"
+    default_dataset="$DATASET_ROOT/openhwgroup__cva6.jsonl"
     ;;
   caliptra|caliptra-rtl)
     org="chipsalliance"
     repo="caliptra-rtl"
-    default_dataset="$DATASET_ROOT/chipsalliance/chipsalliance__caliptra-rtl_s11_eval_ready.jsonl"
+    default_dataset="$DATASET_ROOT/chipsalliance__caliptra-rtl.jsonl"
     ;;
   rocketchip|rocket-chip)
     org="chipsalliance"
     repo="rocket-chip"
-    default_dataset="$DATASET_ROOT/chipsalliance/chipsalliance__rocket-chip_s11_eval_ready.jsonl"
+    default_dataset="$DATASET_ROOT/chipsalliance__rocket-chip.jsonl"
     ;;
   xiangshan|XiangShan)
     org="OpenXiangShan"
     repo="XiangShan"
-    default_dataset="$DATASET_ROOT/OpenXiangShan/OpenXiangShan__XiangShan_s11_eval_ready.jsonl"
+    default_dataset="$DATASET_ROOT/OpenXiangShan__XiangShan.jsonl"
     ;;
   opentitan)
     cat >&2 <<'EOF'

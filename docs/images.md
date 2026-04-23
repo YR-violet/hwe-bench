@@ -7,11 +7,11 @@ This document describes how to download published HWE-bench Docker images. Image
 The intended interface is a repository-level pull script:
 
 ```bash
-./scripts/pull_images.sh ibex --dataset /path/to/lowRISC__ibex_s11_eval_ready.jsonl
-./scripts/pull_images.sh cva6 --dataset /path/to/openhwgroup__cva6_s11_eval_ready.jsonl
-./scripts/pull_images.sh caliptra --dataset /path/to/chipsalliance__caliptra-rtl_s11_eval_ready.jsonl
-./scripts/pull_images.sh rocketchip --dataset /path/to/chipsalliance__rocket-chip_s11_eval_ready.jsonl
-./scripts/pull_images.sh xiangshan --dataset /path/to/OpenXiangShan__XiangShan_s11_eval_ready.jsonl
+./scripts/pull_images.sh ibex --dataset /path/to/lowRISC__ibex.jsonl
+./scripts/pull_images.sh cva6 --dataset /path/to/openhwgroup__cva6.jsonl
+./scripts/pull_images.sh caliptra --dataset /path/to/chipsalliance__caliptra-rtl.jsonl
+./scripts/pull_images.sh rocketchip --dataset /path/to/chipsalliance__rocket-chip.jsonl
+./scripts/pull_images.sh xiangshan --dataset /path/to/OpenXiangShan__XiangShan.jsonl
 ```
 
 The script pulls the shared base image and all per-PR images needed by that repository's dataset. It then retags each remote image into the local name expected by the harness:
@@ -29,7 +29,7 @@ docker tag ghcr.io/pku-liang/lowrisc_m_ibex:pr-1383 hwebench/lowrisc_m_ibex:pr-1
 
 The script derives the per-PR tags from the local dataset JSONL, so there is no separate image tag manifest in the repository. The dataset file can live anywhere and can have any file name; the script validates `org` and `repo` from the JSONL contents.
 
-If you keep the repository's default `datasets/pipeline/` layout, the `--dataset` argument can be omitted for convenience.
+If you keep the repository's default `datasets/` layout from `hf download`, the `--dataset` argument can be omitted for convenience.
 
 OpenTitan images are not distributed because the evaluation flow requires Synopsys VCS. Build OpenTitan images locally from a user-provided `vcs:minimal` base image; see [building-images.md](building-images.md).
 
@@ -47,7 +47,7 @@ Generate Harbor task directories after images are available:
 
 ```bash
 uv run python -m hwe_bench.harness.harbor.adapter \
-  --input datasets/pipeline/<ORG>/<ORG>__<REPO>_s11_eval_ready.jsonl \
+  --input datasets/<dataset>.jsonl \
   --output tasks/hwe-bench-<repo>/
 ```
 

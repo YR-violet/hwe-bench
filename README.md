@@ -20,7 +20,7 @@ Methodology, design decisions, and detailed analysis are described in the accomp
 
 ## Quick Start
 
-Clone, install dependencies, download the ibex subset (smallest, 35 cases), and run Codex on it:
+Clone, install dependencies, download the benchmark data, and run Codex on the ibex subset (smallest, 35 cases):
 
 ```bash
 # 1. Clone and install
@@ -35,7 +35,7 @@ hf download henryen/hwe-bench --repo-type dataset --local-dir datasets/
 
 # 3. Generate task directories
 uv run python -m hwe_bench.harness.harbor.adapter \
-  --input datasets/pipeline/lowRISC/lowRISC__ibex_s11_eval_ready.jsonl \
+  --input datasets/lowRISC__ibex.jsonl \
   --output tasks/hwe-bench-ibex/
 
 # 4. Run the agent
@@ -54,7 +54,7 @@ uv run python -m hwe_bench.harness.harbor.verify_bridge \
 uv run python -m hwe_bench.harness.evaluator \
   --workdir $(pwd)/results/my-first-run/eval_workdir \
   --patch_files $(pwd)/results/my-first-run/patches/patches.jsonl \
-  --dataset_files $(pwd)/datasets/pipeline/lowRISC/lowRISC__ibex_s11_eval_ready.jsonl \
+  --dataset_files $(pwd)/datasets/lowRISC__ibex.jsonl \
   --output_dir results/my-first-run/eval \
   --log_dir $(pwd)/results/my-first-run/eval_logs \
   --stop_on_error false --max_workers 4
@@ -91,14 +91,25 @@ All JSONL datasets are hosted on [HuggingFace](https://huggingface.co/datasets/h
 hf download henryen/hwe-bench --repo-type dataset --local-dir datasets/
 ```
 
-Each repository ships as a single JSONL named `<ORG>__<repo>_s11_eval_ready.jsonl`.
+The repository-specific JSONL files are:
+
+| Repo | Dataset file |
+|------|--------------|
+| ibex | `datasets/lowRISC__ibex.jsonl` |
+| cva6 | `datasets/openhwgroup__cva6.jsonl` |
+| caliptra-rtl | `datasets/chipsalliance__caliptra-rtl.jsonl` |
+| rocket-chip | `datasets/chipsalliance__rocket-chip.jsonl` |
+| XiangShan | `datasets/OpenXiangShan__XiangShan.jsonl` |
+| OpenTitan | `datasets/lowRISC__opentitan.jsonl` |
+
+`datasets/hwe_bench_full.jsonl` contains all 417 cases for analysis and aggregate loading. Use the repository-specific files when running evaluations.
 
 ### Docker Images
 
 Per-PR Docker images are published at `ghcr.io/pku-liang`. Pull images for one repository at a time:
 
 ```bash
-./scripts/pull_images.sh ibex --dataset datasets/pipeline/lowRISC/lowRISC__ibex_s11_eval_ready.jsonl
+./scripts/pull_images.sh ibex --dataset datasets/lowRISC__ibex.jsonl
 ```
 
 OpenTitan images are not distributed because the benchmark flow requires Synopsys VCS. To build OpenTitan locally, first provide a local `vcs:minimal` image with your own VCS installation and license environment, then follow [docs/building-images.md](docs/building-images.md).
@@ -128,7 +139,7 @@ The evaluation pipeline has four steps. A full run over all 417 cases typically 
 
 ```bash
 uv run python -m hwe_bench.harness.harbor.adapter \
-  --input datasets/pipeline/<ORG>/<dataset>.jsonl \
+  --input datasets/<dataset>.jsonl \
   --output tasks/hwe-bench-<repo>/
 ```
 
@@ -176,7 +187,7 @@ uv run python -m hwe_bench.harness.harbor.verify_bridge \
 uv run python -m hwe_bench.harness.evaluator \
   --workdir $(pwd)/results/<job-name>/eval_workdir \
   --patch_files $(pwd)/results/<job-name>/patches/patches.jsonl \
-  --dataset_files $(pwd)/datasets/pipeline/<ORG>/<dataset>.jsonl \
+  --dataset_files $(pwd)/datasets/<dataset>.jsonl \
   --output_dir results/<job-name>/eval \
   --log_dir $(pwd)/results/<job-name>/eval_logs \
   --stop_on_error false --max_workers 4

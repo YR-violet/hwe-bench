@@ -2,7 +2,7 @@
 
 This document describes how to evaluate coding agents on HWE-bench. It covers the six agents that ship with reference recipes, the flags that control a `harbor run`, and the scoring workflow that turns a Harbor job into a final resolved/unresolved count.
 
-Skim the README first for the Quick Start and installation. This document assumes the repository is cloned, `uv sync` has run, Harbor is installed (`uv tool install --editable ./deps/harbor`), the benchmark JSONLs are under `datasets/pipeline/`, and per-PR Docker images have been pulled (or built) for the repository you plan to evaluate.
+Skim the README first for the Quick Start and installation. This document assumes the repository is cloned, `uv sync` has run, Harbor is installed (`uv tool install --editable ./deps/harbor`), the benchmark JSONLs are under `datasets/`, and per-PR Docker images have been pulled (or built) for the repository you plan to evaluate.
 
 ## Prerequisites
 
@@ -12,10 +12,9 @@ A dataset JSONL alone is not enough to run an evaluation. The dataset file defin
 
 **Task directories** are what Harbor actually consumes. The adapter reads the dataset JSONL, reads `/home/base_commit.txt` out of each image to capture the finalized SHA, and emits `tasks/hwe-bench-<repo>/<task-id>/` with `instruction.md` (the prompt the agent sees), `task.toml` (scheduling config), `environment/` (container entrypoints), and `tests/` (held out until scoring):
 
-#todo dataset name may change
 ```bash
 uv run python -m hwe_bench.harness.harbor.adapter \
-  --input datasets/pipeline/<ORG>/<dataset>.jsonl \
+  --input datasets/<dataset>.jsonl \
   --output tasks/hwe-bench-<repo>/
 ```
 
@@ -170,7 +169,7 @@ uv run python -m hwe_bench.harness.harbor.verify_bridge \
 uv run python -m hwe_bench.harness.evaluator \
   --workdir $(pwd)/results/<name>/eval_workdir \
   --patch_files $(pwd)/results/<name>/patches/patches.jsonl \
-  --dataset_files $(pwd)/datasets/pipeline/<ORG>/<dataset>.jsonl \
+  --dataset_files $(pwd)/datasets/<dataset>.jsonl \
   --output_dir results/<name>/eval \
   --log_dir $(pwd)/results/<name>/eval_logs \
   --stop_on_error false --max_workers 4
@@ -186,11 +185,10 @@ The final aggregate lands at `results/<name>/eval/final_report.json`, with the f
 
 Full-benchmark reproduction is expensive (roughly a day of API calls per agent). A cheap sanity check that validates the full pipeline end-to-end is to run one agent on ibex, the smallest subset at 35 cases:
 
-#todo may need to change
 ```bash
 ./scripts/pull_images.sh ibex
 uv run python -m hwe_bench.harness.harbor.adapter \
-  --input datasets/pipeline/lowRISC/lowRISC__ibex_s11_eval_ready.jsonl \
+  --input datasets/lowRISC__ibex.jsonl \
   --output tasks/hwe-bench-ibex/
 export CLAUDE_CODE_OAUTH_TOKEN=<your-token>
 harbor run --path tasks/hwe-bench-ibex/ \

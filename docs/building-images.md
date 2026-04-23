@@ -2,7 +2,7 @@
 
 HWE-bench can use either published Docker images or images built locally from the harness code. Published images are the recommended path for score reproduction. Local builds are useful when images are unavailable, when modifying a repository harness, or when inspecting how the benchmark environment is constructed.
 
-The build flow uses the same s11 JSONL that is later passed to the Harbor adapter. The JSONL location and file name do not matter as long as the records contain the expected `org`, `repo`, `number`, `base`, `fix_patch`, `tb_script`, and `prepare_script` fields.
+The build flow uses the same benchmark JSONL that is later passed to the Harbor adapter. The JSONL location and file name do not matter as long as the records contain the expected `org`, `repo`, `number`, `base`, `fix_patch`, `tb_script`, and `prepare_script` fields.
 
 ## Prerequisites
 
@@ -22,14 +22,14 @@ Use `build-images` to build the shared `:base` image and all per-PR `:pr-N` imag
 
 ```bash
 uv run python -m hwe_bench.harness.docker_runner build-images \
-  --input /path/to/<ORG>__<REPO>_s11_eval_ready.jsonl
+  --input /path/to/<dataset>.jsonl
 ```
 
 Build a small subset while testing the local environment:
 
 ```bash
 uv run python -m hwe_bench.harness.docker_runner build-images \
-  --input /path/to/<ORG>__<REPO>_s11_eval_ready.jsonl \
+  --input /path/to/<dataset>.jsonl \
   --only 1383,2232
 ```
 
@@ -65,7 +65,7 @@ After building images, run golden fail-to-pass validation before using them for 
 uv run python -m hwe_bench.harness.docker_runner \
   --mode instance \
   --workdir "$(pwd)/results/golden-<repo>/eval_workdir" \
-  --raw_dataset_files /path/to/<ORG>__<REPO>_s11_eval_ready.jsonl \
+  --raw_dataset_files /path/to/<dataset>.jsonl \
   --stop_on_error false \
   --max_workers_build_image 4 \
   --max_workers_run_instance 4
@@ -79,7 +79,7 @@ After a successful image build and golden validation, regenerate Harbor task dir
 
 ```bash
 uv run python -m hwe_bench.harness.harbor.adapter \
-  --input /path/to/<ORG>__<REPO>_s11_eval_ready.jsonl \
+  --input /path/to/<dataset>.jsonl \
   --output tasks/hwe-bench-<repo>/
 ```
 
@@ -108,7 +108,7 @@ Once `vcs:minimal` exists, build OpenTitan images normally:
 
 ```bash
 uv run python -m hwe_bench.harness.docker_runner build-images \
-  --input /path/to/lowRISC__opentitan_s11_eval_ready.jsonl
+  --input /path/to/lowRISC__opentitan.jsonl
 ```
 
 Then run golden fail-to-pass validation and regenerate task directories before launching any OpenTitan agent run.
