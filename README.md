@@ -61,6 +61,7 @@ uv run python -m hwe_bench.harness.evaluator \
 ```
 
 The aggregate report lands at `results/my-first-run/eval/final_report.json`.
+For detailed agent recipes, scoring conventions, and troubleshooting notes, see [docs/agents.md](docs/agents.md).
 
 ## Installation
 
@@ -93,14 +94,15 @@ hf download henryen/hwe-bench --repo-type dataset --local-dir datasets/
 
 The repository-specific JSONL files are:
 
-| Repo | Dataset file |
-|------|--------------|
+| Scope | Dataset file |
+|-------|--------------|
 | ibex | `datasets/lowRISC__ibex.jsonl` |
 | cva6 | `datasets/openhwgroup__cva6.jsonl` |
 | caliptra-rtl | `datasets/chipsalliance__caliptra-rtl.jsonl` |
 | rocket-chip | `datasets/chipsalliance__rocket-chip.jsonl` |
 | XiangShan | `datasets/OpenXiangShan__XiangShan.jsonl` |
 | OpenTitan | `datasets/lowRISC__opentitan.jsonl` |
+| Full benchmark | `datasets/hwe_bench_full.jsonl` |
 
 `datasets/hwe_bench_full.jsonl` contains all 417 cases for analysis and aggregate loading. Use the repository-specific files when running evaluations.
 
@@ -118,6 +120,7 @@ The pull script retags remote images into the local `hwebench/...` names used by
 The `--dataset` path can point anywhere; image tags are derived from the JSONL records, not from the file name.
 
 If you prefer to rebuild other images from source, see [docs/building-images.md](docs/building-images.md).
+For a fuller description of image tags, retagging, and source builds, see [docs/images.md](docs/images.md) and [docs/building-images.md](docs/building-images.md).
 
 ### Agent Credentials
 
@@ -131,9 +134,12 @@ Set environment variables for the agents you plan to evaluate:
 | OpenHands SDK | `LLM_API_KEY` | Provider-specific, passed through to LiteLLM |
 | qwen-coder | `DASHSCOPE_API_KEY` | Passed as `OPENAI_API_KEY` inside the container |
 
+Agent-specific command templates and provider notes are documented in [docs/agents.md](docs/agents.md).
+
 ## Running an Evaluation
 
 The evaluation pipeline has four steps. A full run over all 417 cases typically takes around a day of wall-clock time with 4 concurrent containers.
+This section gives the short path; [docs/agents.md](docs/agents.md) covers agent-specific flags, credentials, resume behavior, and scoring details.
 
 ### 1. Generate task directories
 
@@ -204,12 +210,10 @@ Scores on the 417-case benchmark, with default settings (`-k 1 -r 2 -n 4`):
 | Codex (gpt-5.4, high) | 295 / 417 | 70.7% |
 | Claude Opus 4.6 | 284 / 417 | 68.1% |
 | Claude Sonnet 4.6 | 278 / 417 | 66.7% |
-| GLM-5.1\* | 268 / 417 | 64.3% |
+| GLM-5.1 | 268 / 417 | 64.3% |
 | Qwen3.6-Plus (OpenHands) | 219 / 417 | 52.5% |
 | DeepSeek V3.2 | 217 / 417 | 52.0% |
 | Kimi K2.5 | 199 / 417 | 47.7% |
-
-\*GLM-5.1 opentitan-expansion score estimated via easiness-bucket extrapolation; not directly measured.
 
 Per-repository breakdowns and analysis: see the [paper](https://arxiv.org/abs/2604.14709).
 
@@ -217,7 +221,7 @@ Per-repository breakdowns and analysis: see the [paper](https://arxiv.org/abs/26
 
 HWE-bench supports Verilog, SystemVerilog, and Chisel repositories. Adding a new repo involves running the s01–s08 collection pipeline, implementing a harness class (Docker base image plus prepare scripts), writing prompt templates for tbgen/verify/psgen, running s09–s11 to produce an eval-ready JSONL, and generating task directories via the adapter.
 
-Full step-by-step guide: [docs/new-repo-workflow.md](docs/new-repo-workflow.md).
+The construction pipeline is documented in stages: [collect](hwe_bench/collect/README.md) covers s01–s08 PR collection and scoring, [harness](hwe_bench/harness/README.md) gives the overall s09–s11 flow, and the stage-specific documents cover [tbgen](hwe_bench/harness/tbgen/README.md), [verify](hwe_bench/harness/verify/README.md), [psgen](hwe_bench/harness/psgen/README.md), and [repository harnesses](hwe_bench/harness/repos/README.md).
 
 ## Repository Layout
 
@@ -267,4 +271,4 @@ Apache 2.0. See [LICENSE](LICENSE).
 
 HWE-bench builds on open-source contributions from the hardware design community. We thank the maintainers of the six benchmark subject repositories: [ibex](https://github.com/lowRISC/ibex) (lowRISC), [cva6](https://github.com/openhwgroup/cva6) (OpenHW Group), [caliptra-rtl](https://github.com/chipsalliance/caliptra-rtl) and [rocket-chip](https://github.com/chipsalliance/rocket-chip) (CHIPS Alliance), [XiangShan](https://github.com/OpenXiangShan/XiangShan) (OpenXiangShan), and [OpenTitan](https://github.com/lowRISC/opentitan) (lowRISC).
 
-The evaluation harness is built on <HARBOR_URL>. The project was originally forked from [Multi-SWE-bench](https://github.com/multi-swe-bench/multi-swe-bench) and rewritten for hardware description languages.
+The evaluation harness is built on [Harbor](https://github.com/harbor-framework/harbor). The project was originally forked from [Multi-SWE-bench](https://github.com/multi-swe-bench/multi-swe-bench) and rewritten for hardware description languages.
