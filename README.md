@@ -84,6 +84,8 @@ uv sync
 uv tool install --editable ./deps/harbor --force
 ```
 
+The vendored Harbor dependency is documented in [deps/README.md](deps/README.md), including its upstream base and HWE-bench-specific patches.
+
 ### Dataset
 
 All JSONL datasets are hosted on [HuggingFace](https://huggingface.co/datasets/henryen/hwe-bench):

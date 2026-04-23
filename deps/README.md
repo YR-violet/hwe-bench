@@ -41,15 +41,3 @@ The retained Harbor patches are:
 | OpenHands SDK runtime | Register GLM-5.1 and Qwen3.6-plus LiteLLM aliases and wire the condenser. | Supports the model names used in HWE-bench recipes and enables `LLMSummarizingCondenser(max_size=240, keep_first=2)` for long OpenHands SDK runs. |
 | Kimi CLI configuration | Tune Kimi CLI for long-context benchmark tasks. | Uses the Kimi coding endpoint with a 262k-token context window and a higher per-turn step budget for long hardware debugging tasks. |
 | Kimi CLI process management | Use a FIFO-based run command with exit-code normalization. | Prevents Kimi CLI cancellation and error exits from leaving Harbor waiting indefinitely or misclassifying normal termination. |
-
-Several older local patches were dropped after the upstream sync because current Harbor or current dependencies already cover them. Notably, HWE-bench now uses Harbor's native `CODEX_AUTH_JSON_PATH` flow for Codex authentication, and the older DeepSeek `reasoning_content` replay patch is no longer needed with the synced OpenHands SDK / LiteLLM stack.
-
-## Updating Harbor
-
-When syncing Harbor again, keep the update as a subtree change and then reapply only the patches that are still necessary:
-
-```bash
-git subtree pull --prefix=deps/harbor harbor-upstream main --squash
-```
-
-If a future sync is easier to handle manually, maintainers may also replace `deps/harbor/` with a fresh upstream snapshot and reapply the HWE-bench patches as a separate commit. After any Harbor update, smoke-test at least one small HWE-bench task for each affected agent family: Codex CLI, Claude Code, OpenHands SDK backends, and Kimi CLI.
