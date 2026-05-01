@@ -54,6 +54,23 @@ Codex also accepts an OpenAI API key via `OPENAI_API_KEY` for pay-as-you-go bill
 
 OAuth tokens carry one constraint worth surfacing: the `access_token` inside `auth.json` has a 10-day lifetime (visible as the `exp` claim in its JWT payload, and recorded alongside a `last_refresh` timestamp in the file). Check that it has not expired before starting a long run; if it has, run `codex login` on the host to refresh `auth.json`, then launch `harbor run`.
 
+#### Non-OpenAI models via Codex (auto proxy routing)
+
+When `-m` specifies a non-OpenAI model (e.g., `dashscope/qwen3.6-plus`), the agent automatically starts a local [go-llm-proxy](https://github.com/yatesdr/go-llm-proxy) daemon inside the container. The proxy translates Codex's Responses API (`/v1/responses`) to the upstream provider's Chat Completions API transparently. No extra flags are required; the agent detects the model prefix and handles routing internally.
+
+```bash
+export DASHSCOPE_API_KEY=sk-xxxxx
+harbor run --path tasks/hwe-bench-<repo>/ \
+  -a codex -m dashscope/qwen3.6-plus \
+  --ae OPENAI_API_KEY="$DASHSCOPE_API_KEY" \
+  --ak reasoning_effort=xhigh \
+  -k 1 -r 2 --n-concurrent 1 --no-delete \
+  --agent-setup-timeout-multiplier 4.0 \
+  --job-name hwe-<repo>-codex-qwen
+```
+
+Routing logic: models starting with `openai/` use the standard auth.json flow. All other models route through the proxy on `localhost:3456`. Increase `--agent-setup-timeout-multiplier` to 4.0 to accommodate the proxy binary download (~10 MB). For providers without a built-in preset, add an entry to the `CODEX_PROVIDER_PRESETS` dict in `deps/harbor/src/harbor/agents/installed/codex.py`.
+
 ### Claude Code (Anthropic)
 
 Claude Code accepts a long-lived OAuth token via `CLAUDE_CODE_OAUTH_TOKEN`, suitable for non-interactive container use. Generate one on the host with `claude setup-token` (requires an active Claude Pro / Max / Team / Enterprise subscription); the resulting token is valid for one year. Explicitly clear `ANTHROPIC_API_KEY` inside the container: Claude Code prefers the API key over the OAuth token when both are set, and a stray host-side key (even a zero-balance one) will make the agent abort with "credit balance too low". For further details on Claude Code authentication, see <https://code.claude.com/docs/en/authentication>.
