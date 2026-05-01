@@ -110,6 +110,24 @@ harbor run --path tasks/hwe-bench-<repo>/ \
 
 Routing logic: models starting with `anthropic/` connect directly to Anthropic. All other models route through CCR on `localhost:3456`. Set `CCR_FORCE_DIRECT=1` to bypass CCR and force direct Anthropic connection regardless of model. For providers without a built-in preset, set the `CCR_CONFIG_JSON` environment variable with a full CCR configuration (see the [CCR docs](https://github.com/musistudio/claude-code-router) for the config schema).
 
+### OpenCode
+
+OpenCode is a model-agnostic terminal agent. Its built-in SDK adapter system (`@ai-sdk/anthropic`, `@ai-sdk/openai`, etc.) handles protocol selection per provider — no external proxy is required. When `-m` specifies a provider registered in `OPENCODE_ANTHROPIC_PROVIDERS` (e.g., `dashscope`), the agent writes an opencode config that selects the Anthropic Messages SDK adapter and points it at the provider's Anthropic-compatible endpoint. For providers not in the registry, the standard `openai/` path with `OPENAI_BASE_URL` works as usual.
+
+DashScope via Anthropic endpoint:
+
+```bash
+export DASHSCOPE_API_KEY=sk-xxxxx
+harbor run --path tasks/hwe-bench-<repo>/ \
+  -a opencode -m dashscope/qwen3.6-plus \
+  --ae ANTHROPIC_API_KEY="$DASHSCOPE_API_KEY" \
+  -k 1 -r 2 --n-concurrent 1 --no-delete \
+  --agent-setup-timeout-multiplier 3.0 \
+  --job-name hwe-<repo>-opencode-qwen
+```
+
+Anthropic Messages API-compatible endpoints follow the same `provider/model` pattern (`anthropic/claude-sonnet-4-6`, `dashscope/qwen3.6-plus`). OpenAI API-compatible endpoints use `openai/<model>` with optional `OPENAI_BASE_URL`. For the full provider registry and SDK adapter mapping, see [opencode-integration.md](../opencode-integration.md).
+
 ### Kimi CLI (Moonshot)
 
 Kimi CLI authenticates against the **Kimi Code** subscription plan (<https://www.kimi.com/code>), not the usage-based Moonshot platform. It uses the dedicated `api.kimi.com` endpoint with a `KIMI_API_KEY` of the form `sk-kimi-...`, which is distinct from the Moonshot platform's `api.moonshot.cn` / `MOONSHOT_API_KEY` (`sk-...`). Crossing the two yields HTTP 401, which the Kimi adapter surfaces as a hung trial:
