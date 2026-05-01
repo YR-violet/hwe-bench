@@ -74,6 +74,25 @@ harbor run --path tasks/hwe-bench-<repo>/ \
 
 Disallowing `WebSearch` and `WebFetch` is a leakage precaution: it stops the agent from looking up the upstream fix commit on GitHub. Raising `CLAUDE_CODE_MAX_OUTPUT_TOKENS` from the default 64k to 128k avoids thinking-loop truncation on longer multi-file edits. Swap the model identifier to `anthropic/claude-opus-4-6` for Opus runs; the remaining flags carry over.
 
+#### Non-Anthropic models via Claude Code (auto CCR routing)
+
+When `-m` specifies a non-Anthropic model (e.g., `dashscope/qwen3.6-plus`), the agent automatically starts a local [claude-code-router](https://github.com/musistudio/claude-code-router) daemon inside the container. Claude Code runs unchanged — only its API traffic is proxied through the router. No extra flags are required; the agent detects the model prefix and handles routing internally.
+
+```bash
+export DASHSCOPE_API_KEY=sk-xxxxx
+harbor run --path tasks/hwe-bench-<repo>/ \
+  -a claude-code -m dashscope/qwen3.6-plus \
+  --ak max_turns=500 \
+  --ak reasoning_effort=high \
+  --ak "disallowed_tools=WebSearch,WebFetch" \
+  --ae DASHSCOPE_API_KEY="$DASHSCOPE_API_KEY" \
+  -k 1 -r 2 --n-concurrent 1 --no-delete \
+  --agent-setup-timeout-multiplier 2.0 \
+  --job-name hwe-<repo>-qwen
+```
+
+Routing logic: models starting with `anthropic/` connect directly to Anthropic. All other models route through CCR on `localhost:3456`. Set `CCR_FORCE_DIRECT=1` to bypass CCR and force direct Anthropic connection regardless of model. For providers without a built-in preset, set the `CCR_CONFIG_JSON` environment variable with a full CCR configuration (see the [CCR docs](https://github.com/musistudio/claude-code-router) for the config schema).
+
 ### Kimi CLI (Moonshot)
 
 Kimi CLI authenticates against the **Kimi Code** subscription plan (<https://www.kimi.com/code>), not the usage-based Moonshot platform. It uses the dedicated `api.kimi.com` endpoint with a `KIMI_API_KEY` of the form `sk-kimi-...`, which is distinct from the Moonshot platform's `api.moonshot.cn` / `MOONSHOT_API_KEY` (`sk-...`). Crossing the two yields HTTP 401, which the Kimi adapter surfaces as a hung trial:
